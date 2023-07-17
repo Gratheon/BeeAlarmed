@@ -11,7 +11,8 @@
 #
 from Utils import get_config, get_frame_config
 from pathlib import Path
-from queue import Queue
+import multiprocessing
+# import multiprocessing.queues
 import cv2
 import time
 import logging
@@ -59,15 +60,18 @@ class ImageProvider(BeeProcess):
         if video_source is None and video_file is None:
             raise BaseException("Either a video file or a video source id is required")
 
+        # pool = multiprocessing.Pool(processes=5)
+        m = multiprocessing.Manager()
+
         # Prepare for reading from video file
         self.frame_config = frame_config
         if video_file is not None:
-            self._queue = multiprocessing.Queue(maxsize=get_config("FRAME_SET_BUFFER_LENGTH_VIDEO"))
+            self._queue = m.Queue(maxsize=get_config("FRAME_SET_BUFFER_LENGTH_VIDEO"))
             vFile = Path(video_file)
             if not vFile.is_file():
                 raise BaseException("The given file '%s' doesn't seem to be valid!" % (video_file,))
         else:
-            self._queue = multiprocessing.Queue(maxsize=get_config("FRAME_SET_BUFFER_LENGTH_CAMERA"))
+            self._queue = m.Queue(maxsize=get_config("FRAME_SET_BUFFER_LENGTH_CAMERA"))
 
         self.set_process_param("video_file", video_file)
         self.set_process_param("video_source", video_source)
