@@ -30,7 +30,7 @@ class ImageConsumer(BeeProcess):
     by the 'ImageProvider'. It performs the bee detection, bee tracking and
     forwards findings to the 'ImageExtractor' to feed them to the neural network.
     """
-    def __init__(self):
+    def __init__(self, context):
         """! Intitilizes the 'ImageConsumer'
         """
         super().__init__()
@@ -38,16 +38,25 @@ class ImageConsumer(BeeProcess):
         self._classifierResultQueue = None
         self._imageQueue = None
         self._visualQueue = None
+        self.context = {}
         self.set_process_param("e_q", self._extractQueue)
         self.set_process_param("c_q", self._classifierResultQueue)
         self.set_process_param("i_q", self._imageQueue)
         self.set_process_param("v_q", self._visualQueue)
+        self.set_process_param("context", self.context)
 
     def getPositionQueue(self):
         """! Returns the queue object where detected bee positions will be put
         @return A queue object
         """
         return self._extractQueue
+
+    def setContext(self, context):
+        """! Set the queue object where the image consumer can find new frames
+        @param queue    The queue object to read new frames from
+        """
+        self.context = context
+        self.set_process_param("context", self.context)
 
     def setImageQueue(self, queue):
         """! Set the queue object where the image consumer can find new frames
@@ -71,7 +80,7 @@ class ImageConsumer(BeeProcess):
         self.set_process_param("c_q", self._classifierResultQueue)
 
     @staticmethod
-    def run(c_q, i_q, e_q, v_q, parent, stopped, done):
+    def run(c_q, i_q, e_q, v_q, parent, stopped, done, context):
         """! The main thread that runs the 'ImageConsumer'
         """
         _process_time = time.time()
@@ -81,7 +90,8 @@ class ImageConsumer(BeeProcess):
         writer = None
 
         # Create a Bee Tracker
-        tracker = BeeTracker(50, 20)
+        print("BeeTracker.context", context)
+        tracker = BeeTracker(context, 50, 20)
 
         # Create statistics object
         statistics = getStatistics()

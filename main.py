@@ -8,6 +8,7 @@ from Utils import get_args, get_config
 import logging
 import time
 import sys
+from Statistics import getStatistics
 
 # Only load neural network if needed. the overhead is quite large
 if get_config("NN_ENABLE"):
@@ -18,14 +19,18 @@ logger = logging.getLogger(__name__)
 
 def main():
 
+    context = {
+        'stats': getStatistics()
+    }
+
     # Check input format: camera or video file
     args = get_args()
     if args.video:
         logger.info("Starting on video file '%s'" % (args.video))
-        imgProvider = ImageProvider(video_file=args.video)
+        imgProvider = ImageProvider(context, video_file=args.video)
     else:
         logger.info("Starting on camera input")
-        imgProvider = ImageProvider(video_source=0)
+        imgProvider = ImageProvider(context, video_source=0)
 
     while(not (imgProvider.isStarted() or imgProvider.isDone())):
         time.sleep(1)
@@ -44,8 +49,9 @@ def main():
     if get_config("RN2483A_LORA_ENABLE"):
         lorawan = LoRaWANThread()
     imgExtractor = ImageExtractor()
-    imgConsumer = ImageConsumer()
+    imgConsumer = ImageConsumer(context)
     visualiser = Visual()
+    imgConsumer.setContext(context)
     imgConsumer.setImageQueue(imgProvider.getQueue())
     imgConsumer.setVisualQueue(visualiser.getInQueue())
     if get_config("NN_ENABLE"):

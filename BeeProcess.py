@@ -90,7 +90,7 @@ class BeeProcess(object):
         args["stopped"] = self._stopped
         args["done"] = self._done
 
-        self._process = multiprocessing.Process(target=self._run, \
+        self._process = multiprocessing.Process(target=self._run,
                 args=[args])
         self._process.start()
         self._started = True

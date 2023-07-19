@@ -38,11 +38,11 @@ class BeeClassification(BeeProcess):
         self.set_process_param("ready", self._ready)
 
         # The queue for the incoming images
-        self._q_in = multiprocessing.Queue(maxsize=20)
+        self._q_in = multiprocessing.Manager().Queue(maxsize=20)
         self.set_process_param("q_in", self._q_in)
 
         ## The queue where the results are reported
-        self._q_out = multiprocessing.Queue()
+        self._q_out = multiprocessing.Manager().Queue()
         self.set_process_param("q_out", self._q_out)
 
         # Start the process and wait for it to run

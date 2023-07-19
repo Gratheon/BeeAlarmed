@@ -29,7 +29,7 @@ class Visual(BeeProcess):
         """! Initializes the visualiser
         """
         super().__init__()
-        self._inQueue = multiprocessing.Queue(maxsize=20)
+        self._inQueue = multiprocessing.Manager().Queue(maxsize=20)
         self.set_process_param("in_q", self._inQueue)
 
     def getInQueue(self):

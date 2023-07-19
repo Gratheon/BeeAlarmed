@@ -28,10 +28,11 @@ class ImageProvider(BeeProcess):
           the extracted images into a queue, that can then be used by other
           tasks.
     """
-    def __init__(self, video_source=None, video_file=None):
+    def __init__(self, context, video_source=None, video_file=None):
         """! Initializes the image provider process and queue
         """
         super().__init__()
+        self.context = context
 
         self.frame_config = None
         self._videoStream = None

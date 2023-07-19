@@ -30,11 +30,12 @@ class BeeTrack():
 
     """! The 'BeeTrack' object tracks a single bees movement using a kalman filter.
     """
-    def __init__(self, trackId):
+    def __init__(self, context, trackId):
         super(BeeTrack, self).__init__()
 
         ##! Name that gets shown on the screen for that bee
         self._name = ""
+        self.context = context
 
         ## Last detected bee position
         self._last_dectect = None
@@ -146,7 +147,7 @@ class BeeTracker(object):
     """! The 'BeeTracker' manages all 'BeeTrack' instances.
     """
 
-    def __init__(self, dist_threshold, max_frame_skipped, frame_size=(960, 540)):
+    def __init__(self, context, dist_threshold, max_frame_skipped, frame_size=(960, 540)):
         """! Initializes the 'BeeTracker'
         """
         super(BeeTracker, self).__init__()
@@ -157,7 +158,7 @@ class BeeTracker(object):
         self.names = loadWomanNames()
         self._frame_height = frame_size[1]
         self._frame_width = frame_size[0]
-
+        self.context = context
 
         # Create random track colors
         self.track_colors = []
@@ -267,8 +268,7 @@ class BeeTracker(object):
                             cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255))
         # Draw count of bees
         if get_config("DRAW_IN_OUT_STATS"):
-            _dh = getStatistics()
-            bees_in, bees_out = _dh.getBeeCountOverall()
+            bees_in, bees_out = self.context["stats"].getBeeCountOverall()
             cv2.putText(frame,"In: %i, Out: %i" % (bees_in, bees_out), (50,50),
                 cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 5)
 
@@ -302,8 +302,6 @@ class BeeTracker(object):
         """
         track = self.tracks[trackId]
         if count:
-            _dh = getStatistics()
-
             # Y-Position of first detection
             f_y = track.first_position[1]
 
@@ -315,11 +313,12 @@ class BeeTracker(object):
 
             # Moved in
             if f_y > pH and l_y <= pH:
-                _dh.addBeeIn()
+                self.context["stats"].addBeeIn()
 
             # Moved out
             if f_y < pH and l_y >= pH:
-                _dh.addBeeOut()
+                print("context", self.context)
+                self.context["stats"].addBeeOut()
 
         del self.tracks[trackId]
 
@@ -470,7 +469,7 @@ class BeeTracker(object):
                 self._delTrack(num_t, count=True)
 
             # Remove tracks that hit the entry or exit of the hive and have a frame skip
-            elif self.isOutOfPane([self.tracks[num_t].last_predict[0], \
+            elif self.isOutOfPane([self.tracks[num_t].last_predict[0],
                     self.tracks[num_t].last_predict[3]]):
                 self._delTrack(num_t, count=True)
 
@@ -481,7 +480,7 @@ class BeeTracker(object):
 
             # Only create new BeeTrack for bees that are on the pane
             if True:
-                track = BeeTrack(self.trackId)
+                track = BeeTrack(self.context, self.trackId)
                 track.setTrackName(random.choice(self.names))
                 track._last_dectect = detections[item]
                 self.tracks.append(track)

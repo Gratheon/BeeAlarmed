@@ -8,12 +8,22 @@
 # - Created by Fabian Hickert on december 2020
 #
 from collections import deque
+# import redis
 
 class Statistics(object):
     """! The 'Statistics' class keeps track of all the monitoring results.
     """
-
     def __init__(self):
+        # Connect to Redis
+        # redis_host = 'localhost'  # Redis server host
+        # redis_port = 6379  # Redis server port
+        # redis_db = 0  # Redis database number
+        # redis_password = 'pass'  # Redis server password (if any)
+
+        # # Create a Redis client
+        # self.redis = redis.Redis(host=redis_host, port=redis_port, db=redis_db, password=redis_password)
+
+
         """! Initializes the statistics object
         """
         self._beesIn = 0
@@ -40,12 +50,16 @@ class Statistics(object):
     def addBeeIn(self):
         """! Increases the bee-in counter
         """
+        # self.redis.publish("gate.bee_in", "1")
+        print("bee in")
         self._beesIn += 1
         self._beesInOverall += 1
 
     def addBeeOut(self):
         """! Increases the bee-out counter
         """
+        # self.redis.publish("gate.bee_out", "1")
+        print("bee out")
         self._beesOut +=1
         self._beesOutOverall +=1
 
@@ -122,7 +136,7 @@ class Statistics(object):
                 self._coolingCountOverall,
                 self._beesInOverall,
                 self._beesOutOverall,
-                self._processedFamesOverall)
+                self._processedFamesOverlall)
 
     def resetStatistics(self):
         """! Resets the current statistics
@@ -136,15 +150,16 @@ class Statistics(object):
         self._processedFames = 0
 
 
-__dh = None
+# __dh = None
 def getStatistics():
-    """! Returns the statistics object
-    #TODO: use pattern to realize singleton
-    @return The statistics instance
-    """
-    global __dh
-    if __dh == None:
-        __dh = Statistics()
+    return Statistics()
+    # """! Returns the statistics object
+    # #TODO: use pattern to realize singleton
+    # @return The statistics instance
+    # """
+    # global __dh
+    # if __dh == None:
+    #     __dh = Statistics()
 
-    return __dh
+    # return __dh
 
