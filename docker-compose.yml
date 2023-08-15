@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  models-gate-tracker:
+    build: .
+    command: python3.7 /app/server.py
+    environment:
+      ENV_ID: prod
+      CUDA_VISIBLE_DEVICES: 0
+      TF_FORCE_GPU_ALLOW_GROWTH: 'false'
+    ports:
+      - 9100:9100
+    volumes:
+      - .:/app/
+    restart: always
+    tty: true
+    network_mode: host
+networks:
+  gratheon:

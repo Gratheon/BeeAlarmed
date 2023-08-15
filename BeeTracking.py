@@ -269,8 +269,8 @@ class BeeTracker(object):
         # Draw count of bees
         if get_config("DRAW_IN_OUT_STATS"):
             bees_in, bees_out = self.context["stats"].getBeeCountOverall()
-            cv2.putText(frame,"In: %i, Out: %i" % (bees_in, bees_out), (50,50),
-                cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 5)
+            cv2.putText(frame,"In: %i, Out: %i" % (bees_in, bees_out), (50,200),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 5)
 
         return frame
 

@@ -17,20 +17,20 @@ if get_config("NN_ENABLE"):
 logging.basicConfig(level=logging.DEBUG, format='%(process)d %(asctime)s - %(name)s - %(levelname)s - \t%(message)s')
 logger = logging.getLogger(__name__)
 
-def main():
-
+def main(video):
     context = {
         'stats': getStatistics()
     }
 
     # Check input format: camera or video file
-    args = get_args()
-    if args.video:
-        logger.info("Starting on video file '%s'" % (args.video))
-        imgProvider = ImageProvider(context, video_file=args.video)
-    else:
-        logger.info("Starting on camera input")
-        imgProvider = ImageProvider(context, video_source=0)
+    # args = get_args()
+    # if args.video:
+    #     logger.info("Starting on video file '%s'" % (args.video))
+    #     imgProvider = ImageProvider(context, video_file=args.video)
+    # else:
+    #     logger.info("Starting on camera input")
+    #     imgProvider = ImageProvider(context, video_source=0)
+    imgProvider = ImageProvider(context, video_file=video)
 
     while(not (imgProvider.isStarted() or imgProvider.isDone())):
         time.sleep(1)
