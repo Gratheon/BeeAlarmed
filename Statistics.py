@@ -7,6 +7,7 @@
 # @section authors Author(s)
 # - Created by Fabian Hickert on december 2020
 #
+import json
 from collections import deque
 # import redis
 
@@ -111,6 +112,21 @@ class Statistics(object):
              @param tag  any of "wasps", "varroa", "pollen", "cooling"
         """
         self.addDetection(tag)
+
+    def readJSON(self)->str:
+        statistics_tuple = self.readStatistics()
+        statistics_dict = {
+            "wespenCount": statistics_tuple[0],
+            "varroaCount": statistics_tuple[1],
+            "pollenCount": statistics_tuple[2],
+            "coolingCount": statistics_tuple[3],
+            "beesIn": statistics_tuple[4],
+            "beesOut": statistics_tuple[5],
+            "processedFames": statistics_tuple[6]
+        }
+
+        statistics_json = json.dumps(statistics_dict, indent=4)
+        return statistics_json
 
     def readStatistics(self):
         """! Return the current statistics for counted wasps, varroa, pollen,

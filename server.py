@@ -15,9 +15,6 @@ import cgi
 import time
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-
-
-
 # Only load neural network if needed. the overhead is quite large
 if get_config("NN_ENABLE"):
     from BeeClassification import BeeClassification
@@ -26,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(process)d %(asctime)s - %(nam
 logger = logging.getLogger(__name__)
 
 
-def main(video):
+def main(video)->str:
     context = {
         'stats': getStatistics()
     }
@@ -46,7 +43,7 @@ def main(video):
 
     if imgProvider.isDone():
         logger.error("Aborted, ImageProvider did not start. Please see log for errors!")
-        return
+        return ""
 
     # Enable bee classification process only when its enabled
     imgClassifier = None
@@ -101,6 +98,7 @@ def main(video):
         imgProvider.join()
         visualiser.join()
 
+    return context['stats'].readJSON()
 # if __name__ == '__main__':
 #     main()
 #     logger.info('\n! -- BeeAlarmed stopped!\n')
@@ -167,8 +165,9 @@ class UploadHandler(BaseHTTPRequestHandler):
         with open(filepath, 'wb') as file:
             file.write(video_file.file.read())
 
-        self.wfile.write(b'File uploaded successfully')
-        main(filepath)
+        # self.wfile.write(b'File uploaded successfully')
+        result = main(filepath)
+        self.wfile.write(result.encode('utf-8'))
         # else:
         #     self.wfile.write(b'Not found')
 
