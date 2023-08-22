@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import multiprocessing
 from ImageProvider import ImageProvider
 from ImageConsumer import ImageConsumer
 from ImageExtractor import ImageExtractor
@@ -10,6 +11,9 @@ import time
 import sys
 from Statistics import getStatistics
 
+from multiprocessing import Process, Value, Array
+
+import queue
 import os
 import cgi
 import time
@@ -27,6 +31,7 @@ def main(video)->str:
     context = {
         'stats': getStatistics()
     }
+    # result_queue = multiprocessing.Queue()
 
     # Check input format: camera or video file
     # args = get_args()
@@ -57,6 +62,10 @@ def main(video)->str:
     imgExtractor = ImageExtractor()
     imgConsumer = ImageConsumer(context)
     visualiser = Visual()
+
+    stats = Array('c', 1000)
+
+    imgConsumer.setStatsQueue(stats)
     imgConsumer.setContext(context)
     imgConsumer.setImageQueue(imgProvider.getQueue())
     imgConsumer.setVisualQueue(visualiser.getInQueue())
@@ -65,43 +74,56 @@ def main(video)->str:
         imgConsumer.setClassifierResultQueue(imgClassifier.getResultQueue())
     imgExtractor.setInQueue(imgConsumer.getPositionQueue())
 
-    try:
+    # Start the processes
+    imgConsumer.start()
+    imgExtractor.start()
+    visualiser.start()
+    if lorawan is not None:
+        lorawan.start()
 
-        # Start the processes
-        imgConsumer.start()
-        imgExtractor.start()
-        visualiser.start()
-        if lorawan is not None:
-            lorawan.start()
+    # Quit program if end of video-file is reached or
+    # the camera got disconnected
+    #imgConsumer.join()
+    while True:
+        time.sleep(0.01)
+        if imgConsumer.isDone() or imgProvider.isDone():
+            break
 
-        # Quit program if end of video-file is reached or
-        # the camera got disconnected
-        #imgConsumer.join()
-        while True:
-            time.sleep(0.01)
-            if imgConsumer.isDone() or imgProvider.isDone():
-                raise SystemExit(0)
+# except (KeyboardInterrupt, SystemExit):
 
-    except (KeyboardInterrupt, SystemExit):
+    # Tear down all running process to ensure that we don't get any zombies
+    if lorawan is not None:
+        lorawan.stop()
+    imgProvider.stop()
+    imgExtractor.stop()
+    visualiser.stop()
 
-        # Tear down all running process to ensure that we don't get any zombies
-        if lorawan is not None:
-            lorawan.stop()
-        imgProvider.stop()
-        imgExtractor.stop()
-        visualiser.stop()
-        imgConsumer.stop()
-        if imgClassifier:
-            imgClassifier.stop()
-            imgClassifier.join()
-        imgExtractor.join()
-        imgProvider.join()
-        visualiser.join()
+    imgConsumer.stop()
+    imgConsumer.join()
 
-    return context['stats'].readJSON()
-# if __name__ == '__main__':
-#     main()
-#     logger.info('\n! -- BeeAlarmed stopped!\n')
+    res = stats.value.decode('utf-8')
+    print(res)
+    # print("Result:", res)
+
+
+    # while not imgConsumer.stats_queue.empty():
+    # try:
+    #     res = imgConsumer.stats_queue.get(timeout=5)
+    #     print("Result:", res)
+    # except queue.Empty:
+    #     print("Queue is empty or timed out.")
+
+    # print("stats parent:", context['stats'].readJSON())
+    if imgClassifier:
+        imgClassifier.stop()
+        imgClassifier.join()
+
+    imgExtractor.join()
+    imgProvider.join()
+    visualiser.join()
+
+
+    return res
 
 
 

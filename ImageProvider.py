@@ -11,7 +11,6 @@
 #
 from Utils import get_config, get_frame_config
 from pathlib import Path
-import multiprocessing
 # import multiprocessing.queues
 import cv2
 import time

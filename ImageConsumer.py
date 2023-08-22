@@ -12,12 +12,14 @@ import time
 import logging
 import queue
 import multiprocessing
+
 from Statistics import getStatistics
 from ImageProvider import ImageProvider
 from BeeDetection import detect_bees
 from BeeTracking import BeeTracker, BeeTrack
 from Utils import get_config, get_args
 from BeeProcess import BeeProcess
+
 if get_config("NN_ENABLE"):
     from BeeClassification import BeeClassification
 
@@ -38,12 +40,18 @@ class ImageConsumer(BeeProcess):
         self._classifierResultQueue = None
         self._imageQueue = None
         self._visualQueue = None
-        self.context = {}
+        self.stats = None
+        self.context = context
+
         self.set_process_param("e_q", self._extractQueue)
         self.set_process_param("c_q", self._classifierResultQueue)
         self.set_process_param("i_q", self._imageQueue)
         self.set_process_param("v_q", self._visualQueue)
         self.set_process_param("context", self.context)
+
+    def setStatsQueue(self, stats):
+        self.stats = stats
+        self.set_process_param("stats", self.stats)
 
     def getPositionQueue(self):
         """! Returns the queue object where detected bee positions will be put
@@ -80,7 +88,7 @@ class ImageConsumer(BeeProcess):
         self.set_process_param("c_q", self._classifierResultQueue)
 
     @staticmethod
-    def run(c_q, i_q, e_q, v_q, parent, stopped, done, context):
+    def run(c_q, i_q, e_q, v_q, parent, stopped, done, context, stats):
         """! The main thread that runs the 'ImageConsumer'
         """
         _process_time = time.time()
@@ -90,11 +98,12 @@ class ImageConsumer(BeeProcess):
         writer = None
 
         # Create a Bee Tracker
+        statistics = context['stats']
         print("BeeTracker.context", context)
         tracker = BeeTracker(context, 50, 20)
 
         # Create statistics object
-        statistics = getStatistics()
+        # statistics = getStatistics()
 
         if type(i_q) == type(None):
             raise("No image queue provided!")
@@ -171,8 +180,7 @@ class ImageConsumer(BeeProcess):
                     _process_time = time.time()
 
                 # Update statistics
-                _dh = getStatistics()
-                _dh.frameProcessed()
+                statistics.frameProcessed()
 
             else:
                 time.sleep(0.01)
@@ -184,4 +192,6 @@ class ImageConsumer(BeeProcess):
                 time.sleep(limit_time - _end_t)
             _start_t = time.time()
 
+        initial_value_bytes = context['stats'].readJSON().encode('utf-8')
+        stats[:len(initial_value_bytes)] = initial_value_bytes
         logger.info("Image Consumer stopped")

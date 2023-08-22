@@ -12,7 +12,7 @@ USE_GSTREAM:                            False
 # Enabled result visulatization, this will 
 # slow down the processing. Needs to be 
 # enabled to use 'SAVE_AS_VIDEO'
-VISUALIZATION_ENABLED:                  True
+VISUALIZATION_ENABLED:                  False
 
 VISUALIZATION_FRAME_SKIP:               3
 

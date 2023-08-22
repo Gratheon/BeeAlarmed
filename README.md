@@ -1,10 +1,13 @@
-# BeeAlarmed &#128029;&#128029;&#128029;&#127909;
-
+# gratheon/models-gate-tracker
 A camera based bee-hive monitoring that identifies and tracks bees. It also identifies bee characteristics with a neural network, such as pollen packages, wasps, varroa mite infestations or bees trying to cool the hive. Therefore, it utilizes tensorflow, opencv, filterpy and others.
 
 <a href="https://www.youtube.com/watch?v=sRm5TmTcnpg&t=0s">Here is an example video! (YouTube.com)</a>
 
 This is the result of a private project to develop a camera based bee monitoring system. It was initially made to run on the JetsonNano, but it is not limited to it.
+
+This is an fork/adapted version of [BeeAlarmed](https://github.com/BeeAlarmed/BeeAlarmed) project.
+- added http server
+- changed how stats are propagated
 
 ## What it can
 
@@ -51,38 +54,12 @@ Below you can see that two bees were detected cooling the hive (green dots), one
 Look close, you can see the varroa mite.
 <img src="readmeFiles/varroa2_1.jpeg" alt="Detected Varroa" width="100" />
 
-## You want to give it a try?
-
-Just check out this repository and install the dependencies:
-
-```
-git clone https://github.com/BeeAlarmed/BeeAlarmed.git
-cd BeeAlarmed
-git submodule init
-git submodule update
-pip3 install -r requirements.txt
-```
-
-Download the pre trained neural network and unzip it to ./SavedModel: <a href="https://raspbee.de/FH/Github/SavedModel_20201121.zip">SavedModel_20201121.zip</a>
-
-```
-wget "https://raspbee.de/FH/Github/SavedModel_20201121.zip" -O SavedModel_20201121.zip
-unzip SavedModel_20201121.zip -d ./SavedModel
-```
-Note: _I will publish the dataset and neural network once I finished working on them. The dataset is currently based on manually selected and annotated images (>6000)._
-
-Download the example video file: <a href="https://raspbee.de/FH/Github/cooling_varroa_small.avi">Sample Video</a> (314 MB)
-
-**More videos can be found at YouTube: <a href="https://www.youtube.com/channel/UCpw-FKrTnD0F_UrC_hjI34g/videos">YouTube Channel: Raspbee - Videos</a>**
+## Usage
 
 ```
 wget "https://raspbee.de/FH/Github/cooling_varroa_small.avi"
-```
-
-Now start the monitoring system by calling:
-
-```
-python3 main.py --video=./cooling_varroa_small.avi
+pip3 install -r requirements.txt
+python3 server.py
 ```
 
 This is what you should get:
