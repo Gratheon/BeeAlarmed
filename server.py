@@ -31,16 +31,7 @@ def main(video)->str:
     context = {
         'stats': getStatistics()
     }
-    # result_queue = multiprocessing.Queue()
 
-    # Check input format: camera or video file
-    # args = get_args()
-    # if args.video:
-    #     logger.info("Starting on video file '%s'" % (args.video))
-    #     imgProvider = ImageProvider(context, video_file=args.video)
-    # else:
-    #     logger.info("Starting on camera input")
-    #     imgProvider = ImageProvider(context, video_source=0)
     imgProvider = ImageProvider(context, video_file=video)
 
     while(not (imgProvider.isStarted() or imgProvider.isDone())):
@@ -89,8 +80,6 @@ def main(video)->str:
         if imgConsumer.isDone() or imgProvider.isDone():
             break
 
-# except (KeyboardInterrupt, SystemExit):
-
     # Tear down all running process to ensure that we don't get any zombies
     if lorawan is not None:
         lorawan.stop()
@@ -103,17 +92,7 @@ def main(video)->str:
 
     res = stats.value.decode('utf-8')
     print(res)
-    # print("Result:", res)
 
-
-    # while not imgConsumer.stats_queue.empty():
-    # try:
-    #     res = imgConsumer.stats_queue.get(timeout=5)
-    #     print("Result:", res)
-    # except queue.Empty:
-    #     print("Queue is empty or timed out.")
-
-    # print("stats parent:", context['stats'].readJSON())
     if imgClassifier:
         imgClassifier.stop()
         imgClassifier.join()
@@ -121,7 +100,6 @@ def main(video)->str:
     imgExtractor.join()
     imgProvider.join()
     visualiser.join()
-
 
     return res
 
@@ -190,8 +168,15 @@ class UploadHandler(BaseHTTPRequestHandler):
         # self.wfile.write(b'File uploaded successfully')
         result = main(filepath)
         self.wfile.write(result.encode('utf-8'))
-        # else:
-        #     self.wfile.write(b'Not found')
+
+        try:
+            os.remove(filepath)
+            print(f"File '{filepath}' deleted successfully.")
+        except FileNotFoundError:
+            print(f"File '{filepath}' not found.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_DIR, exist_ok=True)
