@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import multiprocessing
 from ImageProvider import ImageProvider
 from ImageConsumer import ImageConsumer
@@ -105,7 +106,7 @@ def main(video)->str:
 
 
 
-UPLOAD_DIR = 'uploads'
+UPLOAD_DIR = '/app/tmp'
 
 class UploadHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -134,14 +135,60 @@ class UploadHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
-        # if self.path == '/upload':
         content_type = self.headers.get('Content-Type')
+        print(content_type)
 
-        # Check if the request contains form data
-        if 'multipart/form-data' not in content_type:
-            self.wfile.write(b'Invalid request')
+        if content_type == 'application/json':
+            self.process_video_from_json_with_filepath()
+        else:
+            if content_type == 'multipart/form-data':
+                self.process_video_from_payload()
+
+    def process_video_from_json_with_filepath(self):
+        # Read JSON payload from request body
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        
+        try:
+            # Parse JSON payload
+            payload = json.loads(post_data)
+            filename = payload.get('filename')
+
+            # print the filename
+            print(filename)
+
+            if not filename:
+                self.wfile.write(b'No filename provided in JSON payload')
+                return
+
+            # Construct the path to the file in /tmp
+            filepath = os.path.join(UPLOAD_DIR, filename)
+
+            # Check if the file exists
+            if not os.path.exists(filepath):
+                self.wfile.write(b'File not found in ' + filepath.encode('utf-8'))
+                return
+
+            # Inference the video file
+            result = main(filepath)
+            self.wfile.write(result.encode('utf-8'))
+
+            try:
+                os.remove(filepath)
+                print(f"File '{filepath}' deleted successfully.")
+            except FileNotFoundError:
+                print(f"File '{filepath}' not found.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            
+        except json.JSONDecodeError:
+            self.wfile.write(b'Invalid JSON payload')
             return
-
+        except Exception as e:
+            self.wfile.write(f'An error occurred: {str(e)}'.encode('utf-8'))
+            return
+    
+    def process_video_from_payload(self):
         # Parse the form data
         form = cgi.FieldStorage(
             fp=self.rfile,
@@ -165,7 +212,7 @@ class UploadHandler(BaseHTTPRequestHandler):
         with open(filepath, 'wb') as file:
             file.write(video_file.file.read())
 
-        # self.wfile.write(b'File uploaded successfully')
+        # Inference the video file
         result = main(filepath)
         self.wfile.write(result.encode('utf-8'))
 

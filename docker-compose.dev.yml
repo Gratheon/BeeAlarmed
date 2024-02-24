@@ -12,10 +12,15 @@ services:
       - 9100:9100
     volumes:
       - .:/app/
+      - bee-video-volume:/app/tmp
     network_mode: bridge
     tty: true
     restart: always
     networks:
       - gratheon
+
 networks:
   gratheon:
+
+volumes:
+    bee-video-volume:
