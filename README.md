@@ -1,15 +1,32 @@
 # gratheon/models-gate-tracker
+This is an fork/adapted version of [BeeAlarmed](https://github.com/BeeAlarmed/BeeAlarmed) project
 A camera based bee-hive monitoring that identifies and tracks bees. It also identifies bee characteristics with a neural network, such as pollen packages, wasps, varroa mite infestations or bees trying to cool the hive. Therefore, it utilizes tensorflow, opencv, filterpy and others.
 
 <a href="https://www.youtube.com/watch?v=sRm5TmTcnpg&t=0s">Here is an example video! (YouTube.com)</a>
 
 This is the result of a private project to develop a camera based bee monitoring system. It was initially made to run on the JetsonNano, but it is not limited to it.
 
-This is an fork/adapted version of [BeeAlarmed](https://github.com/BeeAlarmed/BeeAlarmed) project.
-- added http server
-- changed how stats are propagated
+## Architecture
 
-## What it can
+###  Microservices
+```mermaid
+flowchart LR
+	web-app --"upload /graphql"--> gate-video-stream --"store for re-training with 1 month TTL"--> S3
+
+	beehive-entrance-video-processor --"get next unprocessed video segment"--> gate-video-stream
+	beehive-entrance-video-processor --"inference unprocessed file" --> models-gate-tracker
+	beehive-entrance-video-processor --"send inference results"--> gate-video-stream
+```
+
+### API
+- http POST:
+  - supports direct file upload
+  - supports reading local files on HTTP request
+- http GET: serves upload form
+
+
+
+## Features
 
 It can:
 - count bees entering or leaving the hive
