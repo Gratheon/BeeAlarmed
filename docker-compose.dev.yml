@@ -6,21 +6,28 @@ services:
     # command: python3.7 /app/server.py
     environment:
       ENV_ID: dev
-      CUDA_VISIBLE_DEVICES: 0
-      TF_FORCE_GPU_ALLOW_GROWTH: false
+      CUDA_VISIBLE_DEVICES: 1
+      TF_FORCE_GPU_ALLOW_GROWTH: true
     ports:
       - 9100:9100
     volumes:
       - .:/app/
-      - bee-video-volume:/app/tmp
-    network_mode: bridge
+#      - bee-video-volume:/app/tmp
+#    network_mode: bridge
     tty: true
     restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks:
       - gratheon
 
 networks:
   gratheon:
 
-volumes:
-    bee-video-volume:
+    #volumes:
+    #bee-video-volume:

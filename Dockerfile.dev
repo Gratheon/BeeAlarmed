@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM nvidia/cuda:12.3.1-base-ubuntu20.04
 
 WORKDIR /app
 
@@ -11,11 +11,23 @@ RUN apt update && apt upgrade -y
 
 RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt install -y python3.7
-RUN apt-get install -y apt-utils python3-pip libglib2.0-0 python3-wheel python3-setuptools python3-pip python3-opengl python3.7-distutils python3-apt libsm6 libxext6 libxrender-dev
+RUN apt-get install -y python3.7-dev
 
-# COPY . /app/
+RUN apt-get install -y apt-utils libsm6 libxext6 libxrender-dev libglib2.0-0
+RUN apt-get install -y python3-apt python3-setuptools
+RUN apt-get install -y python3-opengl python3.7-distutils
+RUN apt-get install -y python3-pip
+RUN apt-get install -y python3-wheel
+
+RUN apt install -y gcc
+
+RUN pip install --upgrade pip
+RUN python3 -m pip install setuptools wheel
+
+COPY . /app/
 COPY requirements.txt /app/requirements.txt
+
+RUN GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true pip install --no-cache-dir --force-reinstall -Iv grpcio==1.36.1
 RUN python3.7 -m pip install -r requirements.txt
 
 EXPOSE 9100
