@@ -7,24 +7,31 @@ services:
     runtime: nvidia
     environment:
       ENV_ID: dev
-      CUDA_VISIBLE_DEVICES: 1
-      TF_FORCE_GPU_ALLOW_GROWTH: true
+      # CUDA_VISIBLE_DEVICES: 1
+      # TF_FORCE_GPU_ALLOW_GROWTH: true
       NVIDIA_VISIBLE_DEVICES: all
     ports:
       - 9100:9100
     volumes:
       - .:/app/
+      - /usr/lib/nvidia:/usr/lib/nvidia
+      - /usr/local/nvidia:/usr/local/nvidia
+      - /usr/share/nvidia:/usr/share/nvidia
 #      - bee-video-volume:/app/tmp
 #    network_mode: bridge
     tty: true
+    devices:
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
     restart: always
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     networks:
       - gratheon
 
