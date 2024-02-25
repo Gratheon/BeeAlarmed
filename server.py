@@ -168,6 +168,11 @@ class UploadHandler(BaseHTTPRequestHandler):
             if not os.path.exists(filepath):
                 self.wfile.write(b'File not found in ' + filepath.encode('utf-8'))
                 return
+            
+            # check if file is readable
+            if not os.access(filepath, os.R_OK):
+                self.wfile.write(b'File is not readable')
+                return
 
             # Inference the video file
             result = main(filepath)
