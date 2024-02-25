@@ -173,13 +173,13 @@ class UploadHandler(BaseHTTPRequestHandler):
             result = main(filepath)
             self.wfile.write(result.encode('utf-8'))
 
-            try:
-                os.remove(filepath)
-                print(f"File '{filepath}' deleted successfully.")
-            except FileNotFoundError:
-                print(f"File '{filepath}' not found.")
-            except Exception as e:
-                print(f"An error occurred: {e}")
+#            try:
+                # os.remove(filepath)
+                #print(f"File '{filepath}' deleted successfully.")
+#            except FileNotFoundError:
+#                print(f"File '{filepath}' not found.")
+#            except Exception as e:
+#                print(f"An error occurred: {e}")
             
         except json.JSONDecodeError:
             self.wfile.write(b'Invalid JSON payload')

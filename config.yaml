@@ -3,7 +3,7 @@
 ##
 
 # Use Gstream (NVDEC)
-USE_GSTREAM:                            False
+USE_GSTREAM:                            True
 
 ##
 ## Visualization
