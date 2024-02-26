@@ -24,6 +24,18 @@ RUN apt install -y gcc
 RUN pip install --upgrade pip
 RUN python3 -m pip install setuptools wheel
 
+RUN apt-get install -y \
+    libgstreamer1.0-0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-doc \
+    gstreamer1.0-tools \
+	libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev
+
 COPY . /app/
 COPY requirements.txt /app/requirements.txt
 
