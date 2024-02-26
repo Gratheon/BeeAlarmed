@@ -87,82 +87,90 @@ class ImageProvider(BeeProcess):
 
     @staticmethod
     def run(q_out, config, video_source, video_file, parent, stopped, done):
-
-        # Open video stream
-        if video_source == None:
-            logger.info("Starting from video file input: %s" % (video_file,))
-            # use HW acceleration for video file
-            if get_config("USE_GSTREAM"):
-                _videoStream = cv2.VideoCapture('filesrc location={}\
-                                        ! queue ! h264parse ! omxh264dec ! nvvidconv \
-                                        ! video/x-raw,format=BGRx,width=960,height=540 ! queue ! videoconvert ! queue \
-                                        ! video/x-raw,format=BGR ! appsink'.format(video_file),
-                                        cv2.CAP_GSTREAMER)
-            else:
-                _videoStream = cv2.VideoCapture(video_file)
-        else:
-            logger.info("Starting from camera input")
-            _videoStream = cv2.VideoCapture(video_source)
-            w, h, f = get_config("CAMERA_INPUT_RESOLUTION")
-            if f != None:
-                fourcc = cv2.VideoWriter_fourcc(*f)
-                _videoStream.set(cv2.CAP_PROP_FOURCC, fourcc)
-            if w != None:
-                _videoStream.set(cv2.CAP_PROP_FRAME_WIDTH,  int(w))
-            if h != None:
-                _videoStream.set(cv2.CAP_PROP_FRAME_HEIGHT, int(h))
-
-        _process_time = 0
-        _process_cnt = 0
-        _skipped_cnt = 0
-        while stopped.value == 0:
-
-            # Check if the queue is full
-            if q_out.full():
-
-                # If the queue is full, then report it
-                if _skipped_cnt % 100 == 0:
-                    logger.debug("Buffer reached %i" % (q_out.qsize(),))
-                time.sleep(get_config("FRAME_SET_FULL_PAUSE_TIME"))
-                _skipped_cnt += 1
-            else:
-
-                # There is still space in the queue, get a frame and process it
-                _start_t = time.time()
-                (_ret, _frame) = _videoStream.read()
-
-                if _ret:
-
-                    # Get the original shape
-                    h, w, c = _frame.shape
-
-                    # Convert the frame according to the given configuration.
-                    # The image will be resized if necessary and converted into gray-scale
-                    #  if needed.
-                    fs = tuple()
-                    for item in config:
-                        width, height = _frame.shape[0:2]
-                        if width != item[0] or height != item[1]:
-                            _frame = cv2.resize(_frame, (item[1], item[0]))
-                        if item[2] == cv2.IMREAD_GRAYSCALE:
-                            tmp = cv2.cvtColor(_frame, cv2.COLOR_BGR2GRAY)
-                            fs += (tmp,)
-                        else:
-                            fs += (_frame,)
-
-                    # put the result in the outgoing queue
-                    q_out.put(fs)
-
-                    # Calculate the time needed to process the frame and print it
-                    _process_time += time.time() - _start_t
-                    _process_cnt += 1
-                    if _process_cnt % 100 == 0:
-                        logger.debug('FPS: %i (%i, %i)\t\t buffer size: %i' % (100/_process_time, w, h ,q_out.qsize()))
-                        _process_time = 0
+        try:
+            if video_source == None:
+                logger.info("Starting from video file input: %s" % (video_file,))
+                # use HW acceleration for video file
+                if get_config("USE_GSTREAM"):
+                    _videoStream = cv2.VideoCapture('filesrc location={}\
+                                            ! queue ! h264parse ! omxh264dec ! nvvidconv \
+                                            ! video/x-raw,format=BGRx,width=960,height=540 ! queue ! videoconvert ! queue \
+                                            ! video/x-raw,format=BGR ! appsink'.format(video_file),
+                                            cv2.CAP_GSTREAMER)
                 else:
-                    logger.error("No frame received!")
-                    logger.error("> Try disabling USE_GSTREAM in the config.yaml!")
-                    stopped.value = 1
+                    _videoStream = cv2.VideoCapture(video_file)
+            else:
+                logger.info("Starting from camera input")
+                _videoStream = cv2.VideoCapture(video_source)
+                w, h, f = get_config("CAMERA_INPUT_RESOLUTION")
+                if f != None:
+                    fourcc = cv2.VideoWriter_fourcc(*f)
+                    _videoStream.set(cv2.CAP_PROP_FOURCC, fourcc)
+                if w != None:
+                    _videoStream.set(cv2.CAP_PROP_FRAME_WIDTH,  int(w))
+                if h != None:
+                    _videoStream.set(cv2.CAP_PROP_FRAME_HEIGHT, int(h))
+
+            _process_time = 0
+            _process_cnt = 0
+            _skipped_cnt = 0
+            while stopped.value == 0:
+
+                # Check if the queue is full
+                if q_out.full():
+
+                    # If the queue is full, then report it
+                    if _skipped_cnt % 100 == 0:
+                        logger.debug("Buffer reached %i" % (q_out.qsize(),))
+                    time.sleep(get_config("FRAME_SET_FULL_PAUSE_TIME"))
+                    _skipped_cnt += 1
+                else:
+
+                    # There is still space in the queue, get a frame and process it
+                    _start_t = time.time()
+                    (_ret, _frame) = _videoStream.read()
+
+                    if _ret:
+
+                        # Get the original shape
+                        h, w, c = _frame.shape
+
+                        # Convert the frame according to the given configuration.
+                        # The image will be resized if necessary and converted into gray-scale
+                        #  if needed.
+                        fs = tuple()
+                        for item in config:
+                            width, height = _frame.shape[0:2]
+                            if width != item[0] or height != item[1]:
+                                _frame = cv2.resize(_frame, (item[1], item[0]))
+                            if item[2] == cv2.IMREAD_GRAYSCALE:
+                                tmp = cv2.cvtColor(_frame, cv2.COLOR_BGR2GRAY)
+                                fs += (tmp,)
+                            else:
+                                fs += (_frame,)
+
+                        # put the result in the outgoing queue
+                        q_out.put(fs)
+
+                        # Calculate the time needed to process the frame and print it
+                        _process_time += time.time() - _start_t
+                        _process_cnt += 1
+                        if _process_cnt % 100 == 0:
+                            logger.debug('FPS: %i (%i, %i)\t\t buffer size: %i' % (100/_process_time, w, h ,q_out.qsize()))
+                            _process_time = 0
+                    else:
+                        logger.error("No frame received!")
+                        logger.error("> Try disabling USE_GSTREAM in the config.yaml!")
+                        stopped.value = 1
+                        break  # Exit loop if no frame received
+
+        except Exception as e:
+            logger.error("Error occurred while processing video stream: %s" % str(e))
+
+        finally:
+            # Release the video stream when done
+            if '_videoStream' in locals():
+                _videoStream.release()
 
         # End of process reached
         logger.info("Image provider stopped")
