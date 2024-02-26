@@ -94,7 +94,7 @@ class ImageProvider(BeeProcess):
                 if get_config("USE_GSTREAM"):
                     _videoStream = cv2.VideoCapture('filesrc location={}\
                                             ! queue ! h264parse ! omxh264dec ! nvvidconv \
-                                            ! video/x-raw,format=BGRx,width=960,height=540 ! queue ! videoconvert ! queue \
+                                            ! video/x-raw,format=BGRx,width=1280,height=720,framerate=60/1 ! queue ! videoconvert ! queue \
                                             ! video/x-raw,format=BGR ! appsink'.format(video_file),
                                             cv2.CAP_GSTREAMER)
                 else:
