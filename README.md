@@ -6,6 +6,9 @@ A camera based bee-hive monitoring that identifies and tracks bees. It also iden
 
 This is the result of a private project to develop a camera based bee monitoring system. It was initially made to run on the JetsonNano, but it is not limited to it.
 
+## URLs
+- localhost:9100
+
 ## Architecture
 
 ###  Microservices
