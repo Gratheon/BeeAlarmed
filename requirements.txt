@@ -7,5 +7,6 @@ pyserial==3.5
 pyyaml==6.0.1
 tensorflow-datasets==4.8.2
 numpy==1.21.6
-protobuf==3.19.6
+protobuf>=3.12.2,<4
 grpcio==1.36.1
+onnx==1.12.0
