@@ -25,6 +25,18 @@ flowchart LR
 - http GET: serves upload form
 
 
+## Development
+### Installing locally
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### Running dockerized mode
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
 
 ## Features
 
