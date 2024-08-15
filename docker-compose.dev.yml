@@ -3,6 +3,7 @@ services:
   models-gate-tracker:
     build: 
       dockerfile: ./Dockerfile.dev
+      context: .
     # command: python3.7 /app/server.py
     runtime: nvidia
     environment:

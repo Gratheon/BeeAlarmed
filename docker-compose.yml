@@ -3,6 +3,7 @@ services:
   models-gate-tracker:
     build: 
       dockerfile: ./Dockerfile.prod
+      context: .
     environment:
       ENV_ID: prod
       CUDA_VISIBLE_DEVICES: 0
